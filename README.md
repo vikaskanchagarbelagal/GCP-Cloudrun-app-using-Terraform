@@ -151,10 +151,7 @@ MIT — feel free to use, modify, and share.
 > https://github.com/vikaskanchagarbelagal
 > *“Built for learning, deployment, and GCP ACE portfolio boosting!”*
 
-<<<<<<< HEAD
 ```
 
 
-=======
->>>>>>> b92e095 (commit with project structure)
 Happy building!
