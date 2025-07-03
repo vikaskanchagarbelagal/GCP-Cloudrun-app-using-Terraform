@@ -148,17 +148,11 @@ MIT — feel free to use, modify, and share.
 
 ## 🙋‍♂️ Author
 
-> Replace with your name or GitHub profile link
+> https://github.com/vikaskanchagarbelagal
 > *“Built for learning, deployment, and GCP ACE portfolio boosting!”*
 
 ```
 
----
-
-Let me know if you'd like me to:
-- Insert **your actual values** (project ID, image URL)
-- Add badges (e.g., GitHub Actions status)
-- Include screenshots of the deployed app or CI pipeline
 
 Happy building!
 ```
