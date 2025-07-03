@@ -12,3 +12,8 @@ variable "docker_image_url" {
   description = "The full Docker image URL in Artifact Registry"
   type        = string
 }
+
+variable "gcp_credentials_b64" {
+  description = "Base64 encoded GCP service account JSON key"
+  type        = string
+}
