@@ -1,0 +1,94 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  TF_IN_AUTOMATION: true
+  GOOGLE_APPLICATION_CREDENTIALS: ./creds/serviceaccount.json
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    container:
+      image: hashicorp/terraform:light
+      options: --entrypoint '/usr/bin/env'
+    steps:
+      - uses: actions/checkout@v3
+      - run: rm -rf .terraform
+
+      - name: Terraform Version
+        run: terraform --version
+
+      - name: Setup Credentials
+        run: |
+          mkdir -p ./creds
+          echo "${{ secrets.SERVICEACCOUNT }}" | base64 -d > ./creds/serviceaccount.json
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init -backend-config="credentials=../creds/serviceaccount.json"
+
+      - name: Terraform Validate
+        working-directory: terraform
+        run: terraform validate
+
+  plan:
+    runs-on: ubuntu-latest
+    container:
+      image: hashicorp/terraform:light
+      options: --entrypoint '/usr/bin/env'
+    needs: validate
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Credentials
+        run: |
+          mkdir -p ./creds
+          echo "${{ secrets.SERVICEACCOUNT }}" | base64 -d > ./creds/serviceaccount.json
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init -backend-config="credentials=../creds/serviceaccount.json"
+
+      - name: Terraform Plan
+        working-directory: terraform
+        run: terraform plan -out planfile
+
+      - name: Upload planfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf-planfile
+          path: terraform/planfile
+
+  apply:
+    runs-on: ubuntu-latest
+    container:
+      image: hashicorp/terraform:light
+      options: --entrypoint '/usr/bin/env'
+    needs: plan
+    if: github.event_name == 'workflow_dispatch'
+    environment:
+      name: production
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Credentials
+        run: |
+          mkdir -p ./creds
+          echo "${{ secrets.SERVICEACCOUNT }}" | base64 -d > ./creds/serviceaccount.json
+
+      - name: Download planfile
+        uses: actions/download-artifact@v4
+        with:
+          name: tf-planfile
+          path: terraform/
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init -backend-config="credentials=../creds/serviceaccount.json"
+
+      - name: Terraform Apply
+        working-directory: terraform
+        run: terraform apply -input=false planfile
